@@ -4,12 +4,26 @@ import {Wine} from "../../../stock/entities/Wine";
 
 export function winesReducer(state: Array<Wine> = [],
                              action: wine.Actions): Array<Wine> {
-    //TODO: implement the following action types:
-     // - wine.ActionTypes.WINES_ADD -> Adds a wine to the current list of wines
-     // - wine.ActionTypes.WINES_SET_ALL -> Sets the wines. If there were wines, they are overridden 
-    // - wine.ActionTypes.WINES_REMOVE -> Removes a single wine from the current wines 
-    // - wine.ActionTypes.WINES_UPDATE -> Updates a single wine from the current wines 
-    // - wine.ActionTypes.WINES_UPDATE_RATE -> Updates the rate from a single wine from the current wines
-    // - wine.ActionTypes.WINES_UPDATE_STOCK -> Updates the stock from a single wine from the current wines
-     // - don't forget the default state! return null;
+    switch(action.type) {
+        case wine.ActionTypes.WINES_ADD:
+            return [...state, action.payload.wine];
+        case wine.ActionTypes.WINES_SET_ALL:
+            return [...action.payload.wines];
+        case wine.ActionTypes.WINES_REMOVE:
+            return state.filter((wine : Wine) => wine._id !== action.payload._id);
+        case wine.ActionTypes.WINES_UPDATE:
+            return state.map((wine: Wine) => wine._id === action.payload._id
+                ? Object.assign({}, action.payload.wine)
+                : wine);
+        case wine.ActionTypes.WINES_UPDATE_RATE:
+            return state.map((wine: Wine) => wine._id === action.payload._id
+                ? Object.assign({}, wine, { myRating: action.payload.myRating })
+                : wine);
+        case wine.ActionTypes.WINES_UPDATE_STOCK:
+            return state.map((wine: Wine) => wine._id === action.payload._id
+                ? Object.assign({}, wine, { inStock: action.payload.myStock })
+                : wine);
+        default:
+            return state;
+    }
 };
