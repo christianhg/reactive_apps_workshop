@@ -17,7 +17,7 @@ import {ToggleSidebar} from "../../../statemanagement/actions/containers/sidebar
     `
 })
 export class CollapsableSidebarContainer implements OnDestroy {
-    isCollapsed = false;
+    isCollapsed$ = this.store.select(state => state.containers.collapsableSidebar.isCollapsed);
 
     private subscriptions: Array<Subscription> = [];
 

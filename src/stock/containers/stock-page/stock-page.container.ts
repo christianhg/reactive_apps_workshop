@@ -12,7 +12,7 @@ import {RemoveWine, UpdateRate, UpdateStock} from "../../../statemanagement/acti
     template: `
         <default-page>
             <collapsable-sidebar class="hidden-sm hidden-xs">
-                <favorite-wines (setStock)="onSetStock($event)" [wines]="favoriteWines">
+                <favorite-wines (setStock)="onSetStock($event)" [wines]="favoriteWines$ | async">
                 </favorite-wines>
             </collapsable-sidebar>
             <main>
@@ -33,8 +33,8 @@ import {RemoveWine, UpdateRate, UpdateStock} from "../../../statemanagement/acti
                     <div class="col-sm-12">
                         <h2>
                             <i class="fa fa-user"></i>&nbsp;My wines
-                            <span class="badge badge-primary">todo (number of wines)</span>
-                            <span class="badge badge-primary">todo (price of cellar)euro</span>
+                            <span class="badge badge-primary">{{ totalWines$ | async }}</span>
+                            <span class="badge badge-primary">{{ totalValue$ | async }} euro</span>
                         </h2>
                     </div>
                 </div>
@@ -59,17 +59,16 @@ export class StockPageContainer implements OnDestroy {
         (term: string, wines: Array<Wine>) => {
             return wines.filter(wine => wine.name.toLowerCase().indexOf(term) > -1);
         });
-    favoriteWines: Array<Wine>;
-    //TODO: Total number of wines
-    //TODO: Total value of the wine cellar
+    favoriteWines$ = this.wines$
+        .map((wines: Wine[]) => wines.filter((wine: Wine) => wine.myRating >= 4));
+    totalWines$ = this.wines$
+        .map((wines: Wine[]) => wines.reduce((total: number, wine: Wine) => total + wine.inStock, 0));
+    totalValue$ = this.wines$
+        .map((wines: Wine[]) => wines.reduce((total: number, wine: Wine) => total + wine.inStock * wine.price, 0));
 
     private subscriptions: Array<Subscription> = [];
 
-    constructor(private stockService: StockService, private store: Store<ApplicationState>) {
-        this.subscriptions.push(this.store.subscribe((state: ApplicationState) => {
-            this.favoriteWines = orderBy(state.data.wines.filter((wine: Wine) => wine.myRating > 3), ["myRating"], ["desc"]).slice(0, 5) as Wine[];
-        }));
-    }
+    constructor(private stockService: StockService, private store: Store<ApplicationState>) {}
 
     onRemove(wine: Wine): void {
         this.subscriptions.push(this.stockService.remove(wine).subscribe(() => {
